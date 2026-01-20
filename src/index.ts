@@ -3,3 +3,4 @@ export * from './graph/index.js';
 export * from './recording/index.js';
 export * from './analysis/index.js';
 export * from './generation/index.js';
+export * from './codegen/index.js';
