@@ -23,7 +23,12 @@ export type {
 } from './types.js';
 
 // Main Generator
-export { VariationGenerator, createStep, createAssertion } from './variation-generator.js';
+export {
+  VariationGenerator,
+  createStep,
+  createAssertion,
+  type VariationGeneratorOptions,
+} from './variation-generator.js';
 
 // Sub-generators
 export { HappyPathGenerator } from './happy-path-generator.js';

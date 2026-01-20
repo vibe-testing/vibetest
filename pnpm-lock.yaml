@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@boundaryml/baml':
+        specifier: ^0.217.0
+        version: 0.217.0
       chalk:
         specifier: ^5.3.0
         version: 5.6.2
@@ -71,6 +74,59 @@ packages:
 
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
+
+  '@boundaryml/baml-darwin-arm64@0.217.0':
+    resolution: {integrity: sha512-26yhOd83pzHvO/EN0x/aRqy0OejY2A7+grfAAN+b/I9iPdZ8LgHErXVn2r0sBm//vmmEEu8TI75rGwS1uyD87A==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@boundaryml/baml-darwin-x64@0.217.0':
+    resolution: {integrity: sha512-n6COBW92K3AA24YIh70M0tiN/vvq8UcIpwsuTTZVISw1aBP56GPUDmYNoNFKuBTlEbRVzeKrEuwRV5/7azztUQ==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@boundaryml/baml-linux-arm64-gnu@0.217.0':
+    resolution: {integrity: sha512-a+ourSRXXDU9dRVZnTtyz245tzXIVMrHzLt5/YimdjuYdw4qBwmLV9nyMTRME/9AOrSclMcVpaR1N6adHgQdLQ==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@boundaryml/baml-linux-arm64-musl@0.217.0':
+    resolution: {integrity: sha512-VmahCX8bYwRPGhsTe7bbs6vTOG1PzR1Z7qflD3rmUA0JrcKv3s8wj66pWuWr+194QSkbtXUYgEn5mzug9QLpBw==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@boundaryml/baml-linux-x64-gnu@0.217.0':
+    resolution: {integrity: sha512-7Pn3nvyla+lX1lrRirLFJFddmG1gP9+7Bm+XeqV1Cm0xQNqoHtt8nBGZ0aRRm6enZsVr3DOK3af2xErydlr04Q==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@boundaryml/baml-linux-x64-musl@0.217.0':
+    resolution: {integrity: sha512-Zt60V2QUmvwSg1bG0J3MSxtTMQtOibFsd9A1LsqazuBH3srnHqcmtgw7GK6kCZtcEAFi5B5csTvMEL1Qy26EgQ==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@boundaryml/baml-win32-arm64-msvc@0.217.0':
+    resolution: {integrity: sha512-Lr+6dK0DA/IEZe1GwkdWCu8R7jiY60puVTsWBjZxCzCv/vOA6DZde9+eXvZK+veZp4zD5Oxh4KAOgl8Ie5mYLA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@boundaryml/baml-win32-x64-msvc@0.217.0':
+    resolution: {integrity: sha512-0MhYErNFrV4VX7/i8Cx9ZwWlwIOt9OofwcpiVx3h8QTR26ZtPDYAiht6DIh4P/X6baVwGkzE7jmb7Ao/jp3Fvg==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [win32]
+
+  '@boundaryml/baml@0.217.0':
+    resolution: {integrity: sha512-PDPm/EkbR5ClbP2qorxMnUqgiDcI68u0ED667NAKgjBu+u2BeWb/mRW26ebX5BvY0Ce9pDtlmRD/vHH+rXRAtg==}
+    engines: {node: '>= 10'}
+    hasBin: true
 
   '@esbuild/aix-ppc64@0.21.5':
     resolution: {integrity: sha512-1SDgH6ZSPTlggy1yI6+Dbkiz8xzpHJEVAlF/AM1tHPLsf5STom9rwtjE4hKAF20FfXXNTFqEYXyJNWh1GiZedQ==}
@@ -515,6 +571,9 @@ packages:
     resolution: {integrity: sha512-xNO+fksQhsAckRtDSPWaMeT1uIM+JrDRXlerpnWNXhn1TdB3YZ6uKBMBTKP0eX9XtYEP978hHk1f8332i2AW8Q==}
     cpu: [x64]
     os: [win32]
+
+  '@scarf/scarf@1.4.0':
+    resolution: {integrity: sha512-xxeapPiUXdZAE3che6f3xogoJPeZgig6omHEy1rIY5WVsB3H2BHNnZH+gHG6x91SCWyQCzWGsuL2Hh3ClO5/qQ==}
 
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
@@ -1203,6 +1262,43 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
+  '@boundaryml/baml-darwin-arm64@0.217.0':
+    optional: true
+
+  '@boundaryml/baml-darwin-x64@0.217.0':
+    optional: true
+
+  '@boundaryml/baml-linux-arm64-gnu@0.217.0':
+    optional: true
+
+  '@boundaryml/baml-linux-arm64-musl@0.217.0':
+    optional: true
+
+  '@boundaryml/baml-linux-x64-gnu@0.217.0':
+    optional: true
+
+  '@boundaryml/baml-linux-x64-musl@0.217.0':
+    optional: true
+
+  '@boundaryml/baml-win32-arm64-msvc@0.217.0':
+    optional: true
+
+  '@boundaryml/baml-win32-x64-msvc@0.217.0':
+    optional: true
+
+  '@boundaryml/baml@0.217.0':
+    dependencies:
+      '@scarf/scarf': 1.4.0
+    optionalDependencies:
+      '@boundaryml/baml-darwin-arm64': 0.217.0
+      '@boundaryml/baml-darwin-x64': 0.217.0
+      '@boundaryml/baml-linux-arm64-gnu': 0.217.0
+      '@boundaryml/baml-linux-arm64-musl': 0.217.0
+      '@boundaryml/baml-linux-x64-gnu': 0.217.0
+      '@boundaryml/baml-linux-x64-musl': 0.217.0
+      '@boundaryml/baml-win32-arm64-msvc': 0.217.0
+      '@boundaryml/baml-win32-x64-msvc': 0.217.0
+
   '@esbuild/aix-ppc64@0.21.5':
     optional: true
 
@@ -1452,6 +1548,8 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.55.2':
     optional: true
+
+  '@scarf/scarf@1.4.0': {}
 
   '@types/estree@1.0.8': {}
 

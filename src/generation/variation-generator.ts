@@ -55,6 +55,16 @@ const PRIORITY_ORDER: Record<VariationPriority, number> = {
  * console.log(result.suites[0].variations[0].name); // Semantic test name
  * ```
  */
+/**
+ * Options for the VariationGenerator.
+ */
+export interface VariationGeneratorOptions {
+  /** Generation configuration */
+  config?: Partial<GenerationConfig>;
+  /** Enable LLM-based test naming */
+  useLLM?: boolean;
+}
+
 export class VariationGenerator {
   private config: GenerationConfig;
   private happyPathGenerator: HappyPathGenerator;
@@ -62,18 +72,36 @@ export class VariationGenerator {
   private errorGenerator: ErrorVariationGenerator;
   private edgeCaseGenerator: EdgeCaseGenerator;
   private testNamer: TestNamer;
+  private useLLM: boolean;
 
-  constructor(config: Partial<GenerationConfig> = {}) {
-    this.config = { ...DEFAULT_CONFIG, ...config };
+  constructor(configOrOptions: Partial<GenerationConfig> | VariationGeneratorOptions = {}) {
+    // Handle both old signature (just config) and new signature (options object)
+    const isOptions = (obj: unknown): obj is VariationGeneratorOptions =>
+      typeof obj === 'object' && obj !== null && ('useLLM' in obj || 'config' in obj);
+
+    const options = isOptions(configOrOptions)
+      ? configOrOptions
+      : { config: configOrOptions };
+
+    this.config = { ...DEFAULT_CONFIG, ...options.config };
+    this.useLLM = options.useLLM ?? false;
+
     this.happyPathGenerator = new HappyPathGenerator();
     this.validationGenerator = new ValidationVariationGenerator();
     this.errorGenerator = new ErrorVariationGenerator();
     this.edgeCaseGenerator = new EdgeCaseGenerator();
-    this.testNamer = new TestNamer();
+    this.testNamer = new TestNamer(this.useLLM);
   }
 
   /**
-   * Generates test variations for multiple analyzed flows.
+   * Check if LLM naming is available.
+   */
+  isLLMAvailable(): boolean {
+    return this.testNamer.isLLMAvailable();
+  }
+
+  /**
+   * Generates test variations for multiple analyzed flows (sync, template-based naming).
    *
    * @param input - Generation input with flows and optional config
    * @returns Generation result with all test suites
@@ -122,12 +150,114 @@ export class VariationGenerator {
   }
 
   /**
-   * Generates a test suite for a single flow.
+   * Generates test variations with LLM-based naming (async).
+   *
+   * Uses LLM for semantic test names if available, falls back to templates.
+   *
+   * @param input - Generation input with flows and optional config
+   * @returns Generation result with all test suites
+   */
+  async generateFromFlowsAsync(input: GenerationInput): Promise<GenerationResult> {
+    const config = { ...this.config, ...input.config };
+    const suites: TestSuite[] = [];
+    const warnings: string[] = [];
+    const variationsByCategory: Record<VariationCategory, number> = {
+      happy_path: 0,
+      validation: 0,
+      error_handling: 0,
+      edge_case: 0,
+      security: 0,
+      accessibility: 0,
+      performance: 0,
+    };
+
+    for (const flow of input.flows) {
+      try {
+        const suite = await this.generateSuiteForFlowAsync(flow, config);
+
+        // Count variations by category
+        for (const variation of suite.variations) {
+          variationsByCategory[variation.category]++;
+        }
+
+        suites.push(suite);
+      } catch (error) {
+        warnings.push(`Failed to generate tests for flow ${flow.id}: ${error}`);
+      }
+    }
+
+    const totalVariations = suites.reduce(
+      (sum, suite) => sum + suite.variations.length,
+      0
+    );
+
+    return {
+      suites,
+      totalVariations,
+      variationsByCategory,
+      generatedAt: Date.now(),
+      warnings,
+    };
+  }
+
+  /**
+   * Generates a test suite for a single flow (sync).
    */
   private generateSuiteForFlow(
     flow: AnalyzedFlow,
     config: GenerationConfig
   ): TestSuite {
+    const variations = this.generateVariationsForFlow(flow, config);
+
+    // Apply semantic naming (sync, template-based)
+    const namedVariations = variations.map((v) =>
+      this.testNamer.applyNaming(v, flow)
+    );
+
+    return {
+      id: `suite_${flow.id}`,
+      name: this.generateSuiteName(flow),
+      description: `Test suite for ${flow.name}`,
+      sourceFlow: flow,
+      variations: namedVariations,
+      generatedAt: Date.now(),
+      config,
+    };
+  }
+
+  /**
+   * Generates a test suite for a single flow (async, with LLM naming).
+   */
+  private async generateSuiteForFlowAsync(
+    flow: AnalyzedFlow,
+    config: GenerationConfig
+  ): Promise<TestSuite> {
+    const variations = this.generateVariationsForFlow(flow, config);
+
+    // Apply semantic naming (async, LLM-based with fallback)
+    const namedVariations = await this.testNamer.applyNamingBatchAsync(
+      variations,
+      flow
+    );
+
+    return {
+      id: `suite_${flow.id}`,
+      name: this.generateSuiteName(flow),
+      description: `Test suite for ${flow.name}`,
+      sourceFlow: flow,
+      variations: namedVariations,
+      generatedAt: Date.now(),
+      config,
+    };
+  }
+
+  /**
+   * Generates raw variations for a flow (shared by sync and async methods).
+   */
+  private generateVariationsForFlow(
+    flow: AnalyzedFlow,
+    config: GenerationConfig
+  ): TestVariation[] {
     const variations: TestVariation[] = [];
 
     // Generate happy path variations
@@ -161,25 +291,10 @@ export class VariationGenerator {
     );
 
     // Limit variations per flow
-    const limitedVariations = this.limitVariations(
+    return this.limitVariations(
       filteredVariations,
       config.maxVariationsPerFlow
     );
-
-    // Apply semantic naming
-    const namedVariations = limitedVariations.map((v) =>
-      this.testNamer.applyNaming(v, flow)
-    );
-
-    return {
-      id: `suite_${flow.id}`,
-      name: this.generateSuiteName(flow),
-      description: `Test suite for ${flow.name}`,
-      sourceFlow: flow,
-      variations: namedVariations,
-      generatedAt: Date.now(),
-      config,
-    };
   }
 
   /**

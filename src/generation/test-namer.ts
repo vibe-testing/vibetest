@@ -4,11 +4,17 @@
  * Generates semantic, readable test names.
  * Pattern: 'should [action] when [scenario]'
  *
+ * Supports both template-based naming (sync) and LLM-based naming (async).
+ *
  * @license MIT
  */
 
 import type { AnalyzedFlow, IntentType } from '../analysis/types.js';
 import type { TestVariation, VariationCategory } from './types.js';
+import {
+  TestNamingService,
+  type TestNamingContext,
+} from '../llm/index.js';
 
 /**
  * Intent-specific action verbs.
@@ -79,16 +85,42 @@ const CATEGORY_SCENARIOS: Record<VariationCategory, string[]> = {
  * TestNamer generates semantic test names following the pattern:
  * "should [action] when [scenario]"
  *
+ * Supports both synchronous template-based naming and async LLM-based naming.
+ *
  * @example
  * ```typescript
  * const namer = new TestNamer();
+ *
+ * // Sync (template-based)
  * const variation = namer.applyNaming(testVariation, flow);
- * console.log(variation.name); // "should submit form when all fields are valid"
+ *
+ * // Async (LLM with fallback)
+ * const variation = await namer.applyNamingAsync(testVariation, flow);
+ *
+ * // Batch async (more efficient)
+ * const variations = await namer.applyNamingBatchAsync(variations, flow);
  * ```
  */
 export class TestNamer {
+  private llmService: TestNamingService | null = null;
+  private useLLM: boolean;
+
+  constructor(useLLM: boolean = false) {
+    this.useLLM = useLLM;
+    if (useLLM) {
+      this.llmService = new TestNamingService();
+    }
+  }
+
   /**
-   * Applies semantic naming to a test variation.
+   * Check if LLM naming is available.
+   */
+  isLLMAvailable(): boolean {
+    return this.llmService?.isLLMAvailable() ?? false;
+  }
+
+  /**
+   * Applies semantic naming to a test variation (synchronous, template-based).
    *
    * @param variation - Test variation to name
    * @param flow - Source analyzed flow
@@ -97,6 +129,97 @@ export class TestNamer {
   applyNaming(variation: TestVariation, flow: AnalyzedFlow): TestVariation {
     const name = this.generateName(variation, flow);
     return { ...variation, name };
+  }
+
+  /**
+   * Applies semantic naming using LLM if available, falls back to templates.
+   *
+   * @param variation - Test variation to name
+   * @param flow - Source analyzed flow
+   * @returns Updated variation with semantic name
+   */
+  async applyNamingAsync(
+    variation: TestVariation,
+    flow: AnalyzedFlow
+  ): Promise<TestVariation> {
+    if (!this.llmService || !this.useLLM) {
+      return this.applyNaming(variation, flow);
+    }
+
+    try {
+      const context = this.buildNamingContext(variation, flow);
+      const result = await this.llmService.generateName(context);
+      return {
+        ...variation,
+        name: result.name,
+        description: result.description || variation.description,
+      };
+    } catch {
+      // Fallback to template-based naming
+      return this.applyNaming(variation, flow);
+    }
+  }
+
+  /**
+   * Applies semantic naming to multiple variations (batch, more efficient).
+   *
+   * @param variations - Test variations to name
+   * @param flow - Source analyzed flow
+   * @returns Updated variations with semantic names
+   */
+  async applyNamingBatchAsync(
+    variations: TestVariation[],
+    flow: AnalyzedFlow
+  ): Promise<TestVariation[]> {
+    if (!this.llmService || !this.useLLM || variations.length === 0) {
+      return variations.map((v) => this.applyNaming(v, flow));
+    }
+
+    try {
+      const contexts = variations.map((v) => this.buildNamingContext(v, flow));
+      const results = await this.llmService.generateNamesBatch(contexts);
+
+      return variations.map((v, i) => ({
+        ...v,
+        name: results[i]?.name ?? this.generateName(v, flow),
+        description: results[i]?.description ?? v.description,
+      }));
+    } catch {
+      // Fallback to template-based naming
+      return variations.map((v) => this.applyNaming(v, flow));
+    }
+  }
+
+  /**
+   * Builds the context object for LLM naming.
+   */
+  private buildNamingContext(
+    variation: TestVariation,
+    flow: AnalyzedFlow
+  ): TestNamingContext {
+    const context: TestNamingContext = {
+      flowName: flow.name,
+      flowDescription: flow.description,
+      intentType: flow.intent.type,
+      variationCategory: variation.category,
+      variationDescription: variation.description,
+    };
+
+    // Add validation rule context
+    if (variation.validationRule) {
+      if (variation.validationRule.fieldName) {
+        context.fieldName = variation.validationRule.fieldName;
+      }
+      context.constraintType = variation.validationRule.constraint;
+    }
+
+    // Add error scenario context
+    if (variation.errorScenario) {
+      context.errorType = variation.errorScenario.type;
+      context.expectedBehavior = variation.errorScenario.expectedBehavior;
+    }
+
+    return context;
   }
 
   /**
