@@ -2,6 +2,8 @@
 import { Command } from 'commander';
 import { exploreCommand } from './commands/explore.js';
 import { diffCommand } from './commands/diff.js';
+import { listenCommand } from './commands/listen.js';
+import { generateCommand } from './commands/generate.js';
 
 const program = new Command();
 
@@ -22,6 +24,31 @@ program
   .option('-t, --timeout <ms>', 'Navigation timeout in ms', '30000')
   .option('--click-buttons', 'Click buttons to discover transitions', false)
   .action(exploreCommand);
+
+program
+  .command('listen')
+  .description('Record user interactions in a browser')
+  .argument('<url>', 'URL to open and record')
+  .option('-o, --output <dir>', 'Output directory', './vibetest-output')
+  .option('--headless', 'Run browser in headless mode', false)
+  .option('--no-headless', 'Run browser with UI (default)')
+  .option('-t, --timeout <ms>', 'Navigation timeout in ms', '30000')
+  .option('--screenshots', 'Capture screenshots on events', false)
+  .option('--network', 'Capture network requests', false)
+  .action(listenCommand);
+
+program
+  .command('generate')
+  .description('Generate Playwright tests from recordings')
+  .argument('<recording>', 'Path to recording.json file')
+  .option('-o, --output <dir>', 'Output directory for generated tests', './tests/generated')
+  .option('--javascript', 'Generate JavaScript instead of TypeScript', false)
+  .option('-t, --timeout <ms>', 'Test timeout in ms', '30000')
+  .option('-v, --variations <n>', 'Maximum variations per flow', '15')
+  .option('-p, --min-priority <n>', 'Minimum priority (1=critical, 2=high, 3=medium)', '3')
+  .option('--skip-mocks', 'Skip generating API mocks', false)
+  .option('--dry-run', 'Preview generation without writing files', false)
+  .action(generateCommand);
 
 program
   .command('diff')
