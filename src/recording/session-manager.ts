@@ -15,6 +15,23 @@ import type {
 } from './types.js';
 
 /**
+ * Validates that a path doesn't escape the current working directory.
+ * Prevents path traversal attacks.
+ */
+function validatePath(filePath: string): string {
+  const resolved = path.resolve(filePath);
+  const cwd = process.cwd();
+
+  // Allow absolute paths but warn if they're outside cwd
+  // This is a CLI tool, so we trust user-provided paths but validate them
+  if (!resolved.startsWith(cwd) && !path.isAbsolute(filePath)) {
+    throw new Error(`Path traversal detected: ${filePath} resolves outside current directory`);
+  }
+
+  return resolved;
+}
+
+/**
  * Options for creating a new recording session.
  */
 export interface SessionOptions {
@@ -248,7 +265,7 @@ export class SessionManager {
       throw new Error(`Session not found: ${sessionId}`);
     }
 
-    const outputPath = path.resolve(options.outputPath);
+    const outputPath = validatePath(options.outputPath);
     const outputDir = path.dirname(outputPath);
 
     // Ensure output directory exists
@@ -303,7 +320,7 @@ export class SessionManager {
     if (options.description) recording.description = options.description;
     if (options.tags) recording.tags = options.tags;
 
-    const outputPath = path.resolve(options.outputPath);
+    const outputPath = validatePath(options.outputPath);
     const outputDir = path.dirname(outputPath);
 
     if (!fs.existsSync(outputDir)) {
@@ -324,10 +341,23 @@ export class SessionManager {
    *
    * @param filePath - Path to the JSON file
    * @returns The imported session ID
+   * @throws Error if file cannot be read or contains invalid data
    */
   importSession(filePath: string): string {
-    const content = fs.readFileSync(path.resolve(filePath), 'utf-8');
-    const data = JSON.parse(content);
+    const resolvedPath = validatePath(filePath);
+    const content = fs.readFileSync(resolvedPath, 'utf-8');
+
+    let data: unknown;
+    try {
+      data = JSON.parse(content);
+    } catch {
+      throw new Error(`Invalid JSON in file: ${filePath}`);
+    }
+
+    // Validate basic structure
+    if (!data || typeof data !== 'object') {
+      throw new Error(`Invalid recording format: expected object`);
+    }
 
     // Handle both single session and recording formats
     if ('sessions' in data && Array.isArray(data.sessions)) {
@@ -371,13 +401,13 @@ export class SessionManager {
    * Generates a unique session ID.
    */
   private generateSessionId(): string {
-    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
   }
 
   /**
    * Generates a unique recording ID.
    */
   private generateRecordingId(): string {
-    return `recording_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `recording_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
   }
 }

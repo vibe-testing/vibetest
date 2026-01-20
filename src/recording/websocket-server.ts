@@ -54,6 +54,8 @@ const DEFAULT_OPTIONS: Required<Omit<RecordingServerOptions, 'server'>> = {
   connectionTimeout: 60000,
 };
 
+const MAX_ERRORS = 100;
+
 /**
  * RecordingServer manages WebSocket connections for browser recording.
  *
@@ -88,6 +90,16 @@ export class RecordingServer {
   }
 
   /**
+   * Adds an error message to the error log with size limiting.
+   */
+  private addError(message: string): void {
+    if (this.errors.length >= MAX_ERRORS) {
+      this.errors.shift(); // Remove oldest error
+    }
+    this.errors.push(message);
+  }
+
+  /**
    * Starts the WebSocket server.
    *
    * @returns Promise that resolves when the server is ready
@@ -104,7 +116,7 @@ export class RecordingServer {
         this.wss.on('connection', this.handleConnection.bind(this));
 
         this.wss.on('error', (error) => {
-          this.errors.push(error.message);
+          this.addError(error.message);
           this.events.onError?.(error);
           reject(error);
         });
@@ -227,7 +239,7 @@ export class RecordingServer {
         const message = JSON.parse(data.toString()) as RecordingMessage;
         this.handleMessage(message, clientId);
       } catch (error) {
-        this.errors.push(`Failed to parse message: ${error}`);
+        this.addError(`Failed to parse message: ${error}`);
         this.events.onError?.(error as Error, clientId);
       }
     });
@@ -239,7 +251,7 @@ export class RecordingServer {
 
     // Handle errors
     ws.on('error', (error) => {
-      this.errors.push(error.message);
+      this.addError(error.message);
       this.events.onError?.(error, clientId);
     });
 
@@ -284,10 +296,14 @@ export class RecordingServer {
         }
         break;
 
-      case 'heartbeat':
+      case 'heartbeat': {
         // Reset connection timeout
-        this.setupHeartbeat(clientId, this.clients.get(clientId)!);
+        const client = this.clients.get(clientId);
+        if (client) {
+          this.setupHeartbeat(clientId, client);
+        }
         break;
+      }
 
       default:
         // Unknown message type - log but don't error
@@ -368,13 +384,13 @@ export class RecordingServer {
    * Generates a unique client ID.
    */
   private generateClientId(): string {
-    return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `client_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
   }
 
   /**
    * Generates a unique session ID.
    */
   private generateSessionId(): string {
-    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
   }
 }
