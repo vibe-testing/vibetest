@@ -1,8 +1,28 @@
 {
   "name": "vibetest",
   "version": "0.1.0",
-  "description": "Graph-based web application exploration and test generation CLI",
+  "description": "Graph-based web application exploration and automated Playwright test generation CLI",
+  "author": "VibeTesting Team",
   "license": "MIT",
+  "keywords": [
+    "testing",
+    "playwright",
+    "e2e",
+    "end-to-end",
+    "browser-testing",
+    "test-generation",
+    "automation",
+    "web-testing",
+    "cli"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/vibetest.git"
+  },
+  "homepage": "https://github.com/your-org/vibetest#readme",
+  "bugs": {
+    "url": "https://github.com/your-org/vibetest/issues"
+  },
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -45,6 +65,6 @@
     "vitest": "^2.0.0"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=18.0.0"
   }
 }
