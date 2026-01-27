@@ -22,3 +22,12 @@ client<llm> OpenAI {
     api_key env.OPENAI_API_KEY
   }
 }
+
+// Alias for Sonnet (used by code generation functions)
+client<llm> ClaudeSonnet {
+  provider anthropic
+  options {
+    model claude-sonnet-4-20250514
+    api_key env.ANTHROPIC_API_KEY
+  }
+}

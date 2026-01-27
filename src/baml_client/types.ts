@@ -47,3 +47,107 @@ export function all_succeeded<CheckName extends string>(checks: Record<CheckName
 export function get_checks<CheckName extends string>(checks: Record<CheckName, Check>): Check[] {
     return Object.values(checks)
 }
+export enum ActionType {
+  NAVIGATE = "NAVIGATE",
+  CLICK = "CLICK",
+  TYPE = "TYPE",
+  SELECT = "SELECT",
+  WAIT = "WAIT",
+  ASSERT_TEXT = "ASSERT_TEXT",
+  ASSERT_VISIBLE = "ASSERT_VISIBLE",
+  ASSERT_URL = "ASSERT_URL",
+  ASSERT_ATTRIBUTE = "ASSERT_ATTRIBUTE",
+  SCREENSHOT = "SCREENSHOT",
+}
+
+export enum ExplorationPriority {
+  HIGH = "HIGH",
+  MEDIUM = "MEDIUM",
+  LOW = "LOW",
+  IGNORE = "IGNORE",
+}
+
+export enum SemanticElementKind {
+  PRIMARY_CALL_TO_ACTION = "PRIMARY_CALL_TO_ACTION",
+  SECONDARY_ACTION = "SECONDARY_ACTION",
+  NAVIGATION = "NAVIGATION",
+  FORM_FIELD = "FORM_FIELD",
+  SEARCH = "SEARCH",
+  FILTER_OR_SORT = "FILTER_OR_SORT",
+  PAGINATION = "PAGINATION",
+  DANGEROUS_ACTION = "DANGEROUS_ACTION",
+  DISMISS_OR_CLOSE = "DISMISS_OR_CLOSE",
+  DECORATIVE_OR_LOW_VALUE = "DECORATIVE_OR_LOW_VALUE",
+  OTHER = "OTHER",
+}
+
+export enum TestPriority {
+  CRITICAL = "CRITICAL",
+  HIGH = "HIGH",
+  MEDIUM = "MEDIUM",
+  LOW = "LOW",
+}
+
+export interface GraphPathInfo {
+  name: string
+  urls: string[]
+  score: number
+  category: string
+  hasAuthentication: boolean
+  hasCriticalActions: boolean
+  keyElements: string[]
+  
+}
+
+export interface GraphSummary {
+  totalPages: number
+  maxDepth: number
+  hubPageUrls: string[]
+  clusterSummaries: string[]
+  topPaths: GraphPathInfo[]
+  unexploredCategories: string[]
+  
+}
+
+export interface PlaywrightTestCode {
+  filename: string
+  code: string
+  imports: string[]
+  fixtures: string[]
+  
+}
+
+export interface SemanticElementAnalysis {
+  elementId: string
+  semanticKind: SemanticElementKind
+  domainIntent: string
+  importanceScore: number
+  explorationPriority: ExplorationPriority
+  reasoning?: string | null
+  
+}
+
+export interface SemanticElementBatchResult {
+  elements: SemanticElementAnalysis[]
+  
+}
+
+export interface TestCase {
+  name: string
+  description: string
+  priority: TestPriority
+  tags: string[]
+  steps: TestStep[]
+  preconditions: string[]
+  postconditions: string[]
+  
+}
+
+export interface TestStep {
+  action: ActionType
+  target?: string | null
+  value?: string | null
+  description: string
+  order: number
+  
+}

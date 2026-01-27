@@ -3,3 +3,7 @@ auto = "fallback"
 
 [run]
 bun = true
+
+[test]
+# Only run tests in src/ directory, exclude original-idea/
+root = "./src"

@@ -4,39 +4,13 @@ AI test generation from your clicks. Record. Generate. Test. Stop writing tests 
 
 ## Installation
 
-### Quick install (recommended)
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/vibe-testing/vibetest/refs/heads/main/install.sh | bash
-```
-
-### Install specific version
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/vibe-testing/vibetest/refs/heads/main/install.sh | bash -s -- --version 0.1.0
-```
-
-### Install from local binary
-
-```bash
-./install.sh --binary /path/to/vibetest
-```
-
-### Build from source
-
 Requires [Bun](https://bun.sh) v1.0+
 
 ```bash
 git clone https://github.com/vibe-testing/vibetest.git
 cd vibetest
 bun install
-bun run build
-```
-
-Binary will be at `dist/vibetest`. Move it to your PATH or use the install script:
-
-```bash
-./install.sh --binary dist/vibetest
+bunx playwright install chromium
 ```
 
 ## Configuration
@@ -79,35 +53,61 @@ cp .env.example .env
 
 ## Usage
 
+### Explore a web application
+
 ```bash
-# Basic usage
-vibetest https://your-app.com
+# Explore and build a semantic graph
+bun run dev explore https://your-app.com
 
-# With reset endpoint (for stateful apps)
-vibetest https://your-app.com --reset-endpoint https://your-app.com/api/reset
+# Explore with custom depth and page limits
+bun run dev explore https://your-app.com --depth 5 --pages 100
 
+# Run with visible browser (for debugging)
+bun run dev explore https://your-app.com --no-headless
+
+# Export Mermaid diagram
+bun run dev explore https://your-app.com --mermaid
+```
+
+### Generate Playwright tests
+
+```bash
+# Generate tests from exploration graph
+bun run dev generate
+
+# Preview without writing files
+bun run dev generate --dry-run
+
+# Custom output directory
+bun run dev generate --output tests/e2e
+
+# Use a specific graph file
+bun run dev generate --input .vibetest/app-graph.json
+```
+
+### Other commands
+
+```bash
 # Show help
-vibetest --help
+bun run dev -- --help
 
 # Show version
-vibetest --version
+bun run dev -- --version
 ```
 
 ## How it works
 
-1. You provide a URL
-2. vibetest launches Playwright and explores the page
-3. It builds an internal graph of DOM, interactions, and accessibility info
-4. The LLM suggests test cases based on the analysis
-5. You approve/reject suggested tests
-6. vibetest generates Playwright test code for approved tests
+1. **Explore**: `vibetest explore <url>` launches Playwright and crawls your app
+2. **Graph**: Builds a semantic graph of pages, elements, and navigation flows
+3. **Analyze**: Identifies authentication, transaction, and critical user flows
+4. **Generate**: Creates Playwright test files organized by flow category
+5. **Customize**: Review and enhance generated tests for your specific needs
 
 ## Development
 
 ### Prerequisites
 
 - [Bun](https://bun.sh) v1.0+
-- Node.js 18+ (for some tooling)
 
 ### Setup
 
@@ -135,7 +135,7 @@ bun run baml:generate
 
 ```bash
 bun run dev
-bun run dev -- https://example.com
+bun run dev explore https://example.com
 bun run dev -- --help
 ```
 
@@ -145,11 +145,11 @@ bun run dev -- --help
 bun run build
 ```
 
-Creates a standalone binary at `dist/vibetest`.
+Creates a compiled binary at `dist/vibetest` (requires `node_modules` at runtime for Playwright).
 
 ### Testing
 
-Tests are co-located with source files using `.spec.ts` suffix.
+Tests are co-located with source files using `.test.ts` suffix.
 
 ```bash
 # Run all tests
@@ -159,7 +159,7 @@ bun test
 bun test --watch
 
 # Run specific test file
-bun test src/config/config-loader.service.spec.ts
+bun test src/graph/exploration-graph.test.ts
 ```
 
 ### Type checking
@@ -168,33 +168,12 @@ bun test src/config/config-loader.service.spec.ts
 bunx tsc --noEmit
 ```
 
-### Project structure
-
-```
-vibetest/
-├── src/
-│   ├── index.ts                 # CLI entry point
-│   └── config/
-│       ├── config.interface.ts           # Config type definitions
-│       ├── config-loader.service.ts      # XDG-compliant config loading
-│       ├── config-loader.service.spec.ts # Tests (co-located)
-│       └── index.ts                      # Barrel export
-│   └── baml_client/             # Generated BAML client (committed)
-├── baml_src/
-│   └── clients.baml             # LLM provider configuration
-├── dist/                        # Build output (git-ignored)
-├── install.sh                   # Cross-platform install script
-├── package.json
-├── tsconfig.json
-└── bunfig.toml
-```
-
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. Add tests for new functionality (co-located `.spec.ts` files)
+4. Add tests for new functionality (co-located `.test.ts` files)
 5. Run tests (`bun test`)
 6. Run type checking (`bunx tsc --noEmit`)
 7. Commit your changes (`git commit -m 'feat: add amazing feature'`)
@@ -203,10 +182,4 @@ vibetest/
 
 ### Commit convention
 
-We use [Conventional Commits](https://www.conventionalcommits.org/):
-
-- `feat:` new feature
-- `fix:` bug fix
-- `docs:` documentation only
-- `chore:` maintenance tasks
-- `refactor:` code change that neither fixes a bug nor adds a feature
+We use [Conventional Commits](https://www.conventionalcommits.org/).

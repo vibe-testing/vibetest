@@ -27,19 +27,85 @@ export { FieldType, EnumBuilder, ClassBuilder }
 export default class TypeBuilder {
     private tb: _TypeBuilder;
     
+    GraphPathInfo: ClassViewer<'GraphPathInfo', "name" | "urls" | "score" | "category" | "hasAuthentication" | "hasCriticalActions" | "keyElements">;
+    
+    GraphSummary: ClassViewer<'GraphSummary', "totalPages" | "maxDepth" | "hubPageUrls" | "clusterSummaries" | "topPaths" | "unexploredCategories">;
+    
+    PlaywrightTestCode: ClassViewer<'PlaywrightTestCode', "filename" | "code" | "imports" | "fixtures">;
+    
+    SemanticElementAnalysis: ClassViewer<'SemanticElementAnalysis', "elementId" | "semanticKind" | "domainIntent" | "importanceScore" | "explorationPriority" | "reasoning">;
+    
+    SemanticElementBatchResult: ClassViewer<'SemanticElementBatchResult', "elements">;
+    
+    TestCase: ClassViewer<'TestCase', "name" | "description" | "priority" | "tags" | "steps" | "preconditions" | "postconditions">;
+    
+    TestStep: ClassViewer<'TestStep', "action" | "target" | "value" | "description" | "order">;
+    
+    
+    ActionType: EnumViewer<'ActionType', "NAVIGATE" | "CLICK" | "TYPE" | "SELECT" | "WAIT" | "ASSERT_TEXT" | "ASSERT_VISIBLE" | "ASSERT_URL" | "ASSERT_ATTRIBUTE" | "SCREENSHOT">;
+    
+    ExplorationPriority: EnumViewer<'ExplorationPriority', "HIGH" | "MEDIUM" | "LOW" | "IGNORE">;
+    
+    SemanticElementKind: EnumViewer<'SemanticElementKind', "PRIMARY_CALL_TO_ACTION" | "SECONDARY_ACTION" | "NAVIGATION" | "FORM_FIELD" | "SEARCH" | "FILTER_OR_SORT" | "PAGINATION" | "DANGEROUS_ACTION" | "DISMISS_OR_CLOSE" | "DECORATIVE_OR_LOW_VALUE" | "OTHER">;
+    
+    TestPriority: EnumViewer<'TestPriority', "CRITICAL" | "HIGH" | "MEDIUM" | "LOW">;
     
 
     constructor() {
         this.tb = new _TypeBuilder({
           classes: new Set([
-            
+            "GraphPathInfo","GraphSummary","PlaywrightTestCode","SemanticElementAnalysis","SemanticElementBatchResult","TestCase","TestStep",
           ]),
           enums: new Set([
-            
+            "ActionType","ExplorationPriority","SemanticElementKind","TestPriority",
           ]),
           runtime: DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIME
         });
         
+        this.GraphPathInfo = this.tb.classViewer("GraphPathInfo", [
+          "name","urls","score","category","hasAuthentication","hasCriticalActions","keyElements",
+        ]);
+        
+        this.GraphSummary = this.tb.classViewer("GraphSummary", [
+          "totalPages","maxDepth","hubPageUrls","clusterSummaries","topPaths","unexploredCategories",
+        ]);
+        
+        this.PlaywrightTestCode = this.tb.classViewer("PlaywrightTestCode", [
+          "filename","code","imports","fixtures",
+        ]);
+        
+        this.SemanticElementAnalysis = this.tb.classViewer("SemanticElementAnalysis", [
+          "elementId","semanticKind","domainIntent","importanceScore","explorationPriority","reasoning",
+        ]);
+        
+        this.SemanticElementBatchResult = this.tb.classViewer("SemanticElementBatchResult", [
+          "elements",
+        ]);
+        
+        this.TestCase = this.tb.classViewer("TestCase", [
+          "name","description","priority","tags","steps","preconditions","postconditions",
+        ]);
+        
+        this.TestStep = this.tb.classViewer("TestStep", [
+          "action","target","value","description","order",
+        ]);
+        
+        
+        this.ActionType = this.tb.enumViewer("ActionType", [
+          "NAVIGATE","CLICK","TYPE","SELECT","WAIT","ASSERT_TEXT","ASSERT_VISIBLE","ASSERT_URL","ASSERT_ATTRIBUTE","SCREENSHOT",
+        ]);
+        
+        this.ExplorationPriority = this.tb.enumViewer("ExplorationPriority", [
+          "HIGH","MEDIUM","LOW","IGNORE",
+        ]);
+        
+        this.SemanticElementKind = this.tb.enumViewer("SemanticElementKind", [
+          "PRIMARY_CALL_TO_ACTION","SECONDARY_ACTION","NAVIGATION","FORM_FIELD","SEARCH","FILTER_OR_SORT","PAGINATION","DANGEROUS_ACTION","DISMISS_OR_CLOSE","DECORATIVE_OR_LOW_VALUE","OTHER",
+        ]);
+        
+        this.TestPriority = this.tb.enumViewer("TestPriority", [
+          "CRITICAL","HIGH","MEDIUM","LOW",
+        ]);
         
     }
 

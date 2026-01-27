@@ -20,7 +20,7 @@ $ pnpm add @boundaryml/baml
 
 import type { Image, Audio, Pdf, Video } from "@boundaryml/baml"
 import type { Checked, Check } from "./types"
-import type {  } from "./types"
+import type {  ActionType,  ExplorationPriority,  GraphPathInfo,  GraphSummary,  PlaywrightTestCode,  SemanticElementAnalysis,  SemanticElementBatchResult,  SemanticElementKind,  TestCase,  TestPriority,  TestStep } from "./types"
 import type * as types from "./types"
 
 /******************************************************************************
@@ -36,4 +36,54 @@ export interface StreamState<T> {
 }
 
 export namespace partial_types {
+    export interface GraphPathInfo {
+      name?: string | null
+      urls: string[]
+      score?: number | null
+      category?: string | null
+      hasAuthentication?: boolean | null
+      hasCriticalActions?: boolean | null
+      keyElements: string[]
+    }
+    export interface GraphSummary {
+      totalPages?: number | null
+      maxDepth?: number | null
+      hubPageUrls: string[]
+      clusterSummaries: string[]
+      topPaths: GraphPathInfo[]
+      unexploredCategories: string[]
+    }
+    export interface PlaywrightTestCode {
+      filename?: string | null
+      code?: string | null
+      imports: string[]
+      fixtures: string[]
+    }
+    export interface SemanticElementAnalysis {
+      elementId?: string | null
+      semanticKind?: types.SemanticElementKind | null
+      domainIntent?: string | null
+      importanceScore?: number | null
+      explorationPriority?: types.ExplorationPriority | null
+      reasoning?: string | null
+    }
+    export interface SemanticElementBatchResult {
+      elements: SemanticElementAnalysis[]
+    }
+    export interface TestCase {
+      name?: string | null
+      description?: string | null
+      priority?: types.TestPriority | null
+      tags: string[]
+      steps: TestStep[]
+      preconditions: string[]
+      postconditions: string[]
+    }
+    export interface TestStep {
+      action?: types.ActionType | null
+      target?: string | null
+      value?: string | null
+      description?: string | null
+      order?: number | null
+    }
 }
